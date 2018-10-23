@@ -7,7 +7,9 @@ output: html_document
 
 ### Loss function
 
-```{r}
+> you have separate the continuous outcome and categorical outcome
+
+```{r build a square erro function}
 # %*% 是矩陣相乘的意思
 
 sqerrloss = function(beta, X, y){
@@ -21,20 +23,26 @@ sqerrloss = function(beta, X, y){
 # data setup
 set.seed(123)                              # for reproducibility
 N = 100                                    # sample size
-X = cbind(1, X1=rnorm(N), X2=rnorm(N))     # model matrix: intercept, 2 predictors
-X
-beta = c(0, -.5, .5)                       # true coef values
-y =  rnorm(N, X%*%beta, sd=1)              # target
+X = cbind(1, X1=rnorm(N), X2=rnorm(N))     # model matrix: intercept, 2 predictors #rnorm, to build a                                                normal distribution with mean = 0, sd =1
+beta = c(0, -.5, .5)                       # true coef values. we give them (0,-0.5,0.5) as default
+y = rnorm(N, X%*%beta, sd=1)               # target
 y
 ```
 
 ```{r}
 # results
+#optim, General-purpose optimization
 our_func = optim(par=c(0,0,0),             # starting values
                  fn=sqerrloss, 
                  X=X, 
                  y=y, 
                  method='BFGS')
+
+#arguments par, Initial values for the parameters to be optimized over.
+
+#Method "BFGS" is a quasi-Newton method (also known as a variable metric algorithm), specifically that published simultaneously in 1970 by Broyden, Fletcher, Goldfarb and Shanno. This uses function values and gradients to build up a picture of the surface to be optimized.
+
+data.frame(X[,-1])
 
 # our_func
 lm_result = lm(y ~ ., data.frame(X[,-1]))  # check with lm 
