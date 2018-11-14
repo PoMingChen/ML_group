@@ -57,12 +57,13 @@ rbind(optim=c(our_func$par, our_func$value),
 set.seed(123)
 N = 100
 X = cbind(1, matrix(rnorm(N*10), ncol=10))
+X
 beta = runif(ncol(X))
+#runif generates random deviates
 y =  rnorm(N, X%*%beta, sd=2)
 
 y
 ```
-
 
 ```{r}
 sqerrloss_reg = function(beta, X, y, lambda=.5){
@@ -70,6 +71,9 @@ sqerrloss_reg = function(beta, X, y, lambda=.5){
   # sum((y-mu)^2) + lambda*sum(abs(beta[-1])) # conceptual
   sum((y-mu)^2) + 2*length(y)*lambda*sum(abs(beta[-1])) # actual for lasso
 }
+
+#beta[-1]，就是那些coeffient，然後要取abs()絕對值。
+length(y)
 
 lm_result = lm(y~., data.frame(X[,-1]) )
 regularized_result = optim(par=rep(0, ncol(X)), 
@@ -86,10 +90,13 @@ regularized_result = optim(par=rep(0, ncol(X)),
 N_test = 50
 X_test = cbind(1, matrix(rnorm(N_test*10), ncol=10))
 y_test = rnorm(N_test, X_test%*%beta, sd=2)
+```
 
+```{r}
 # fits on training set
 fits_lm = fitted(lm_result, newdata = data.frame(X))
 fits_reg = X%*%regularized_result$par
+
 
 # loss on training set
 data.frame(lm_train = crossprod(y - fits_lm),
