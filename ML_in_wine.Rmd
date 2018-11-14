@@ -1,0 +1,37 @@
+---
+title: "ML_in_wine"
+author: "PoMingChen"
+date: "2018/11/14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#read.csv is used to read the file that separate the values in comma
+#read.csv2 is used to read the file that separate the values in semicolon
+
+read.csv2("./winequality-white.csv") -> whitewine
+read.csv2("./winequality-red.csv") -> redwine
+```
+
+```{r}
+library(tidyverse)
+library(magrittr)
+whitewine
+whitewine %>% mutate(color = "white") -> whitewine
+redwine %>% mutate(color = "red") -> redwine
+
+rbind(whitewine, redwine) -> winelist
+
+winelist %>% mutate(white = if_else(color=="white", 1, 0))
+winelist %<>% select(color, white, quality, everything())
+```
+
+```{r}
+winelist %>% mutate(good = if_else(quality >= 6, "Good","Bad")) %<>% 
+             select(color, white, quality, good, everything())
+```
+
