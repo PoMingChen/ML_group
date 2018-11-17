@@ -9,7 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+#### data preparation
+```{r 讀取檔案}
 #read.csv is used to read the file that separate the values in comma
 #read.csv2 is used to read the file that separate the values in semicolon
 
@@ -17,7 +18,7 @@ read.csv2("./winequality-white.csv") -> whitewine
 read.csv2("./winequality-red.csv") -> redwine
 ```
 
-```{r}
+```{r 製造出紅白酒綜合表格}
 library(tidyverse)
 library(magrittr)
 whitewine
@@ -26,12 +27,89 @@ redwine %>% mutate(color = "red") -> redwine
 
 rbind(whitewine, redwine) -> winelist
 
-winelist %>% mutate(white = if_else(color=="white", 1, 0))
+winelist %<>% mutate(white = if_else(color=="white", 1, 0))
 winelist %<>% select(color, white, quality, everything())
 ```
 
-```{r}
-winelist %>% mutate(good = if_else(quality >= 6, "Good","Bad")) %<>% 
+```{r 創造優/劣的虛擬變數}
+winelist %<>% mutate(good = if_else(quality >= 6, "Good","Bad")) %<>% 
              select(color, white, quality, good, everything())
+```
+
+#### the caret package tool
+> The caret package (short for _C_lassification _A_nd _RE_gression _T_raining) is a set of functions that attempt to streamline the process for creating predictive models. The package contains tools for:
+
+- data splitting
+- pre-processing
+- feature selection
+- model tuning using resampling
+- variable importance estimation
+```{r}
+install.packages("caret")
+```
+
+```{r}
+#the initiated setting in the beginning
+
+# library(doParallel)
+# cl = makeCluster(7)
+# registerDoParallel(cl)
+```
+
+```{r 切割樣本}
+library(caret)
+set.seed(1234) # so that the indices will be the same when re-run
+
+trainIndices = createDataPartition(winelist$good, p=.8, list=F)
+
+trainIndices
+#logical - should the results be in a list (TRUE) or a matrix with the number of rows equal to floor(p * length(y)) and times columns.
+
+#free.sulfur.dioxide和total.sulfur.dixocide共線程度高，因此留一個即可。
+wine_train = winelist %>% 
+  select(-free.sulfur.dioxide, -density, -quality, -color, -white) %>% 
+  slice(trainIndices)
+
+#slice : Select rows by position；filter的話就是會有一個equivalent operation
+
+wine_test = winelist %>% 
+  select(-free.sulfur.dioxide, -density, -quality, -color, -white) %>% 
+  slice(-trainIndices)
+```
+
+```{r 資料型態轉換}
+wine_train #5,199 rows
+wine_test #1,298 rows
+
+wine_train[,2:10] <- lapply(wine_train[,2:10], function(x) as.numeric(as.character(x)))
+wine_test[,2:10] <- lapply(wine_test[,2:10], function(x) as.numeric(as.character(x)))
+
+# wine_train[complete.cases(wine_train),]
+# wine_test[complete.cases(wine_test),]
+```
+
+let's have the short visual play (prepoccessed-data)
+```{r }
+wine_trainplot = select(wine_train, -good) %>% 
+  preProcess(method="range") %>% 
+  predict(newdata= select(wine_train, -good))
+#Pre-processing transformation (centering, scaling etc.) can be estimated from the training data and applied to any data set with the same variables.
+
+#The "range" transformation scales the data to be within rangeBounds. If new samples have values larger or smaller than those in the training set, values will be outside of this range.
+
+```
+
+```{r}
+wine_trainplot
+featurePlot(x=wine_trainplot, y=wine_train$good, "box")
+```
+
+```{r}
+# x <- matrix(rnorm(50*5),ncol=5)
+# y <- factor(rep(c("A", "B"),  25))
+# 
+# x
+# y
+# featurePlot(x, y, "box")
 ```
 
