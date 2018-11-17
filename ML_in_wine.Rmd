@@ -81,8 +81,10 @@ wine_test = winelist %>%
 wine_train #5,199 rows
 wine_test #1,298 rows
 
-wine_train[,2:10] <- lapply(wine_train[,2:10], function(x) as.numeric(as.character(x)))
-wine_test[,2:10] <- lapply(wine_test[,2:10], function(x) as.numeric(as.character(x)))
+wine_train[,2:10] <- lapply(wine_train[,2:10], function(x) {as.numeric(as.character(x))})
+wine_test[,2:10] <- lapply(wine_test[,2:10], function(x) {as.numeric(as.character(x))})
+
+# 問題：這邊function後面，若沒有大括號也是可以的？
 
 # wine_train[complete.cases(wine_train),]
 # wine_test[complete.cases(wine_test),]
@@ -100,8 +102,9 @@ wine_trainplot = select(wine_train, -good) %>%
 ```
 
 ```{r}
-wine_trainplot
 featurePlot(x=wine_trainplot, y=wine_train$good, "box")
+
+# A shortcut to produce lattice graphs，不懂為什麼出來是NULL?
 ```
 
 ```{r}
