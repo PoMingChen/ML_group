@@ -45,7 +45,7 @@ winelist %<>% mutate(good = if_else(quality >= 6, "Good","Bad")) %<>%
 - model tuning using resampling
 - variable importance estimation
 ```{r}
-install.packages("caret")
+# install.packages("caret")
 ```
 
 ```{r}
@@ -114,5 +114,13 @@ featurePlot(x=wine_trainplot, y=wine_train$good, "box")
 # x
 # y
 # featurePlot(x, y, "box")
+```
+
+```{r}
+library(ggplot2)
+wine_train
+wine_trainplot %>% cbind(wine_train$good) %>% rename(good = "wine_train$good") -> wine_trainplot
+wine_trainplot %>% select(good, everything())
+wine_trainplot %>% ggplot(aes(x=good, y=citric.acid)) + geom_boxplot()
 ```
 
